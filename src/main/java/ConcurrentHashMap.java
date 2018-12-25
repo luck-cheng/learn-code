@@ -110,12 +110,12 @@ import java.util.stream.Stream;
  * for program control.
  *
  * 检索操作（包括{@code get}）通常不会阻塞，因此可能与更新操作重叠（包括{@code put}和{@code remove}）。
- * 检索反映了最近完成的更新操作的结果。（更正式地说，给定密钥的更新操作承担与该密钥的任何（非空）检索之前发生的关系，报告更新的值。）
- * 对于诸如{@code putAll}和{@code clear}之类的聚合操作, ，并发检索可能反映只插入或删除一些条目。
- * 类似地，Iterators，Spliterators和Enumerations在迭代器/枚举的创建时或之后的某个时刻返回反映哈希表状态的元素。
- * 他们不抛出{@link java.util.ConcurrentModificationException ConcurrentModificationException}。
- * 但是，迭代器设计为一次只能由一个线程使用。, 请记住，包括{@code size}，{@ code isEmpty}和{@code containsValue}
- * 在内的聚合状态方法的结果通常仅在地图未在其他线程中进行并发更新时才有用。, 否则，这些方法的结果反映了可能足以用于监视或估计目的的瞬态，但不适用于程序控制。
+ * 检索反映了最近完成的更新操作的结果。（更正式地说，给定key的更新操作更新后的值，与该key的任何（非空）检索的值，有着happens-before的关系。）
+ * 对于诸如{@code putAll}和{@code clear}之类的聚合操作，并发检索可能反映只插入或删除仅仅几个条目。
+ * 同样，Iterators，Spliterators和Enumerations返回的元素，反映了哈希表在某个时刻或从迭代器/枚举的创建时的状态。
+ * 他们不抛出{@link java.util.ConcurrentModificationException ConcurrentModificationException}异常。
+ * 但是，迭代器设计为一次只能由一个线程使用。请记住，包括{@code size}，{@code isEmpty}和{@code containsValue}
+ * 在内的聚合状态方法返回的结果，通常仅在map未在其他线程中进行并发更新时才有用。否则，这些方法的返回结果反映了瞬间状态，这可能只足以用于监测或估计目的，但不适用于最终的程序控制。
  *
  * <p>The table is dynamically expanded when there are too many
  * collisions (i.e., keys that have distinct hash codes but fall into
@@ -138,6 +138,16 @@ import java.util.stream.Stream;
  * {@code hashCode()} is a sure way to slow down performance of any
  * hash table. To ameliorate impact, when keys are {@link Comparable},
  * this class may use comparison order among keys to help break ties.
+ *
+ * 当存在太多碰撞冲突时，该table是动态扩展的（即，具有不同哈希码的key，落入相同的以table大小取模的槽中），
+ * 粗略维持两个箱映射一个，具有预期的平均效果（对应为了重新调整大小的负载因子阀值0.75）。
+ * 随着映射的添加和删除，这个平均值可能会有很大的差异，但总的来说，这为哈希表维持了普遍接受范围内，时间/空间的权衡。
+ * 但是，调整table大小或任何其他table可能是一个相对较慢的操作。在可能的情况下，
+ * 提供大小估计值作为可选的{@code initialCapacity}构造函数参数。
+ * 另一个可选的{@code loadFactor}构造函数参数通过指定在计算给定数量的元素时要分配的空间量时使用的表密度，提供了另一种自定义初始表容量的方法。
+ * 此外，为了与此类的先前版本兼容，构造函数可以选择指定预期的{@code concurrencyLevel}作为内部大小调整的附加提示。
+ * 请注意，一个降低任何哈希表性能的明确方式，就是使用很多具有完全相同的{@code hashCode()}的key。
+ * 为了改善影响，当keys具有比较性{@link Comparable}时，此类可以使用key之间的比较顺序来帮助打破关系。
  *
  * <p>A {@link Set} projection of a ConcurrentHashMap may be created
  * (using {@link #newKeySet()} or {@link #newKeySet(int)}), or viewed
