@@ -165,12 +165,20 @@ import java.util.stream.Stream;
  * to a {@code ConcurrentHashMap<String,LongAdder> freqs}, you can use
  * {@code freqs.computeIfAbsent(k -> new LongAdder()).increment();}
  *
+ * 通过使用{@link java.util.concurrent.atomic.LongAdder}的value，并通过{@link #computeIfAbsent computeIfAbsent}进行初始化，
+ * ConcurrentHashMap可用作可伸缩频率的map（直方图或多集的形式）。例如，要向{@code ConcurrentHashMap <String，LongAdder> freqs}添加计数，
+ * 您可以使用{@code freqs.computeIfAbsent(k -> new LongAdder()).increment();}
+ *
  * <p>This class and its views and iterators implement all of the
  * <em>optional</em> methods of the {@link Map} and {@link Iterator}
  * interfaces.
  *
+ * 该类及其视图和迭代器实现了{@link Map}和{@link Iterator}接口的所有可选方法。
+ *
  * <p>Like {@link Hashtable} but unlike {@link HashMap}, this class
  * does <em>not</em> allow {@code null} to be used as a key or value.
+ *
+ * 与{@link Hashtable}类似，但与{@link HashMap}不同，此类不允许将{@code null}用作键或值。
  *
  * <p>ConcurrentHashMaps support a set of sequential and parallel bulk
  * operations that, unlike most {@link Stream} methods, are designed
