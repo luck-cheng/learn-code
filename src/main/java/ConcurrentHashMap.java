@@ -147,13 +147,16 @@ import java.util.stream.Stream;
  * 另一个可选的{@code loadFactor}构造函数参数通过指定在计算给定数量的元素时要分配的空间量时使用的表密度，提供了另一种自定义初始表容量的方法。
  * 此外，为了与此类的先前版本兼容，构造函数可以选择指定预期的{@code concurrencyLevel}作为内部大小调整的附加提示。
  * 请注意，一个降低任何哈希表性能的明确方式，就是使用很多具有完全相同的{@code hashCode()}的key。
- * 为了改善影响，当keys具有比较性{@link Comparable}时，此类可以使用key之间的比较顺序来帮助打破关系。
+ * 为了改善影响，当keys具有比较性{@link Comparable}时，此类可以使用key之间的顺序比较来帮助改变。
  *
  * <p>A {@link Set} projection of a ConcurrentHashMap may be created
  * (using {@link #newKeySet()} or {@link #newKeySet(int)}), or viewed
  * (using {@link #keySet(Object)} when only keys are of interest, and the
  * mapped values are (perhaps transiently) not used or all take the
  * same mapping value.
+ *
+ * 可以（使用{@link #newKeySet()}或{@link #newKeySet(int)}创建ConcurrentHashMap中的{@link Set}映射），
+ * 或者对有意义的key，它们映射的value（可能暂时的）没有被使用或者这些key的value都一样时，可以使用{@link #keySet(Object)}去查看
  *
  * <p>A ConcurrentHashMap can be used as scalable frequency map (a
  * form of histogram or multiset) by using {@link
