@@ -196,18 +196,29 @@ import java.util.stream.Stream;
  * ideally be side-effect-free. Bulk operations on {@link java.util.Map.Entry}
  * objects do not support method {@code setValue}.
  *
+ * ConcurrentHashMaps支持一组顺序和并行批量操作，与大多数{@link Stream}方法不同，它们被设计为安全且通常合理地应用，即使是由其他线程同时更新的map;
+ * 例如，在共享注册表中计算值的快照摘要时。有三种操作，每种操作有四种形式，接受具有Keys,Values,Entries和(Key, Value)参数并/或返回值的函数。
+ * 因为ConcurrentHashMap的元素没有以任何特定方式排序，并且可能在不同的并行执行中以不同的顺序处理，所提供的函数的正确性不应该依赖于任何排序，
+ * 或者在计算过程中可能暂时改变的任何其他对象或值;除了forEach动作外，在理想情况下应该是无副作用的。在{@link java.util.Map.Entry}对象上的批量操作不支持方法{@code setValue}。
+ *
  * <ul>
  * <li> forEach: Perform a given action on each element.
  * A variant form applies a given transformation on each element
  * before performing the action.</li>
  *
+ * forEach：对每个元素执行给定的操作。在执行这个给定操作前，以变量的形式对每个元素应用给定的变换。
+ *
  * <li> search: Return the first available non-null result of
  * applying a given function on each element; skipping further
  * search when a result is found.</li>
  *
+ * search：在每个元素上应用给定函数返回第一个可用的非null结果;当一个结果找到就会跳过之后的搜索.
+ *
  * <li> reduce: Accumulate each element.  The supplied reduction
  * function cannot rely on ordering (more formally, it should be
  * both associative and commutative).  There are five variants:
+ *
+ * reduce：累积每个元素。提供的reduce功能不依赖于排序（更正式地说，它应该是关联的和可交换的）。有五种变体：
  *
  * <ul>
  *
@@ -215,11 +226,17 @@ import java.util.stream.Stream;
  * (key, value) function arguments since there is no corresponding
  * return type.)</li>
  *
+ * 简单减少的方式。（这个方法没有(key，value)这种形式，因为没有相应的返回类型。）
+ *
  * <li> Mapped reductions that accumulate the results of a given
  * function applied to each element.</li>
  *
+ * 映射缩减每一个元素执行给定的方法累计的结果。
+ *
  * <li> Reductions to scalar doubles, longs, and ints, using a
  * given basis value.</li>
+ *
+ * 使用给定的基值去简化标准数量的doubles，longs和ints。
  *
  * </ul>
  * </li>
@@ -231,10 +248,16 @@ import java.util.stream.Stream;
  * {@code Long.MAX_VALUE} suppresses all parallelism.  Using a value
  * of {@code 1} results in maximal parallelism by partitioning into
  * enough subtasks to fully utilize the {@link
- * ForkJoinPool#commonPool()} that is used for all parallel
+ * ForkJoinPool#commonPool()} that is used for all parallelestimated
  * computations. Normally, you would initially choose one of these
  * extreme values, and then measure performance of using in-between
  * values that trade off overhead versus throughput.
+ *
+ * 批量操作接受一个{@code parallelismThreshold（并行执行该操作的线程数量）}参数。
+ * 如果当前map大小估计小于给定的阈值，则方法进程顺序进行。
+ * 使用{@code Long.MAX_VALUE}去限制所有的并发。使用{@code 1}的值，
+ * 通过划分为足够子任务来充分利用{@linkForkJoinPool＃commonPool()}去应对在最大并发下所有的并发计算。
+ * 通常，您最初会选择其中一个极值，然后权衡开销与吞吐量使用中间值测量性能。
  *
  * <p>The concurrency properties of bulk operations follow
  * from those of ConcurrentHashMap: Any non-null result returned
@@ -253,6 +276,12 @@ import java.util.stream.Stream;
  * should be the identity element for the reduction). Most common
  * reductions have these properties; for example, computing a sum
  * with basis 0 or a minimum with basis MAX_VALUE.
+ *
+ * 批量操作的并发属性遵循ConcurrentHashMap的属性：从{@code get（key）}返回的任何非空结果和相关的访问方法，都与相关的插入或更新具有happens-before关系。
+ * 任何批量操作的结果都反映了这些每一个元素关系的组成（但对整个map考虑，它的原子性不是必须的，除非它在某些方式被当做静止的）。
+ * 相反地，因为map中的key和value永远不为null，所以null用来作为当前缺少任何结果时的可靠原子指示器。为了维护这个属性，null用作所有non-scalar缩减操作的隐式基础。
+ * 对于double，long和int版本，这些基本类型中的一个，当与任何其他值组合时，返回其他值（更正式地说，它应该是减少的标识元素）。
+ * 大量常见的减少操作具有这些特性;例如，以基本类型MAX_VALUE和基本类型0或最小值计算和。
  *
  * <p>Search and transformation functions provided as arguments
  * should similarly return null to indicate the lack of any result
